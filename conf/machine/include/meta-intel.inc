@@ -36,3 +36,9 @@ EFI_PROVIDER ?= "rmc-boot"
 
 # Add general MACHINEOVERRIDE for meta-intel
 MACHINEOVERRIDES =. "intel-x86-common:"
+
+# All machine flavors may (or may not) run on qemu...
+require conf/machine/include/qemuboot-intel.inc
+
+# Ensure that the extra tools needed by qemu are built when building images.
+require conf/machine/include/qemu.inc
