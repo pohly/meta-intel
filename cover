@@ -1,0 +1,45 @@
+meta-intel: enable qemu and select more suitable virtual machine options
+
+Although the machines definitions in meta-intel are meant to target
+real hardware, begin able to start the resulting images under qemu is
+nevertheless useful for testing.
+
+Doing that via runqemu depends on a per-image runqemu.conf that
+describes how to run qemu for the image. Ineriting qemuboot.bbclass in
+image recipes with QB_ variables set for the current architecture via
+overrides creates that file.
+
+The new qemuboot-intel.inc was copied from OE-core's qemuboot-x86.inc
+and adapted to the three common machines in meta-intel:
+
+$ diff ../openembedded-core/meta/conf/machine/include/qemuboot-x86.inc conf/machine/include/qemuboot-intel.inc
+3,5c3,5
+< QB_SYSTEM_NAME_x86 = "qemu-system-i386"
+< QB_CPU_x86 = "-cpu qemu32"
+< QB_CPU_KVM_x86 = "-cpu kvm32"
+---
+> QB_SYSTEM_NAME_intel-core2-32 = "qemu-system-i386"
+> QB_CPU_intel-core2-32 = "-cpu coreduo"
+> QB_CPU_KVM_intel-core2-32 = "-cpu kvm32"
+7,9c7,13
+< QB_SYSTEM_NAME_x86-64 = "qemu-system-x86_64"
+< QB_CPU_x86-64 = "-cpu core2duo"
+< QB_CPU_KVM_x86-64 = "-cpu kvm64"
+---
+> QB_SYSTEM_NAME_intel-corei7-64 = "qemu-system-x86_64"
+> QB_CPU_intel-corei7-64 = "-cpu Nehalem"
+> QB_CPU_KVM_intel-corei7-64 = "-cpu kvm64"
+>
+> QB_SYSTEM_NAME_intel-quark = "qemu-system-i386"
+> QB_CPU_intel-quark = "-cpu coreduo"
+> QB_CPU_KVM_intel-quark = "-cpu kvm32"
+
+intel-core2-32 and intel-corei7-64 work (tested with an Ostro OS
+derivative with OVMF as firmware), whereas intel-quark hangs while
+showing the OVMF/TianoCore logo.
+
+In all three cases there's a (harmless?) warning:
+warning: TCG doesn't support requested feature: CPUID.01H:EDX.vme [bit 1]
+
+Including qemu.inc (from OE-core) ensures that qemu gets built when
+building an image.
